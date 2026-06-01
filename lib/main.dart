@@ -5,7 +5,7 @@ import 'providers/auth_provider.dart';
 import 'utils/theme.dart';
 import 'screens/splash_screen.dart';
 
-// IMPORTANT: Run `flutterfire configure` to generate `firebase_options.dart`,
+// IMPORTANT: Run `flutter fire configure` to generate `firebase_options.dart`,
 // and then import it here and pass DefaultFirebaseOptions.currentPlatform
 // to Firebase.initializeApp().
 // import 'firebase_options.dart';
