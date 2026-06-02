@@ -9,7 +9,7 @@ import 'screens/splash_screen.dart';
 // and then import it here and pass DefaultFirebaseOptions.currentPlatform
 // to Firebase.initializeApp().
 // import 'firebase_options.dart';
-
+// Main application entry point
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
@@ -17,7 +17,7 @@ void main() async {
     // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
     await Firebase.initializeApp(); 
   } catch (e) {
-    debugPrint("Firebase initialization failed. Please run flutterfire configure.");
+    debugPrint("Firebase initialization failed. Check Firebase configuration and try again.");
   }
   
   runApp(
@@ -36,8 +36,9 @@ class SmartAttendanceApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Smart Attendance',
+      title: 'Smart Attendance System',
       theme: AppTheme.lightTheme,
+      themeMode: ThemeMode.system,
       home: const SplashScreen(),
       debugShowCheckedModeBanner: false,
     );
