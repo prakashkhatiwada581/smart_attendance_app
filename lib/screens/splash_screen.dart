@@ -6,7 +6,7 @@ import 'teacher/teacher_dashboard.dart';
 import 'student/student_dashboard.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -21,25 +21,42 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _checkAuth() async {
+    debugPrint("SplashScreen: Starting auth check...");
+    // Give time for the animation/splash to be seen
     await Future.delayed(const Duration(seconds: 2));
     if (!mounted) return;
 
     final auth = context.read<AuthProvider>();
-    if (auth.isLoading) {
-      // Wait a bit more if still loading auth state
+    
+    // If it's still loading, we wait a bit more, but not forever
+    int retryCount = 0;
+    while (auth.isLoading && retryCount < 3) {
+      debugPrint("SplashScreen: Auth is still loading, waiting... ($retryCount)");
       await Future.delayed(const Duration(seconds: 1));
+      retryCount++;
     }
 
     if (!mounted) return;
     
+    debugPrint("SplashScreen: Auth check complete. Authenticated: ${auth.isAuthenticated}, User: ${auth.user?.name}");
+
     if (auth.isAuthenticated && auth.user != null) {
       if (auth.user!.role == 'teacher') {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const TeacherDashboard()));
+        debugPrint("SplashScreen: Navigating to Teacher Dashboard");
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const TeacherDashboard()),
+        );
       } else {
-        Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const StudentDashboard()));
+        debugPrint("SplashScreen: Navigating to Student Dashboard");
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const StudentDashboard()),
+        );
       }
     } else {
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const LoginScreen()));
+      debugPrint("SplashScreen: Navigating to Login Screen");
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+      );
     }
   }
 
@@ -47,10 +64,10 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).primaryColor,
-      body: Center(
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Icon(Icons.qr_code_scanner, size: 100, color: Colors.white),
             SizedBox(height: 20),
             Text(

@@ -5,6 +5,7 @@ class UserModel {
   final String role; // 'teacher' or 'student'
   final String course;
   final double attendancePercentage;
+  final String? profileImageUrl;
 
   UserModel({
     required this.id,
@@ -13,6 +14,7 @@ class UserModel {
     required this.role,
     required this.course,
     this.attendancePercentage = 0.0,
+    this.profileImageUrl,
   });
 
   factory UserModel.fromMap(Map<String, dynamic> data, String documentId) {
@@ -23,6 +25,7 @@ class UserModel {
       role: data['role'] ?? 'student',
       course: data['course'] ?? '',
       attendancePercentage: (data['attendancePercentage'] ?? 0.0).toDouble(),
+      profileImageUrl: data['profileImageUrl'],
     );
   }
 
@@ -33,6 +36,26 @@ class UserModel {
       'role': role,
       'course': course,
       'attendancePercentage': attendancePercentage,
+      'profileImageUrl': profileImageUrl,
     };
+  }
+
+  UserModel copyWith({
+    String? name,
+    String? email,
+    String? role,
+    String? course,
+    double? attendancePercentage,
+    String? profileImageUrl,
+  }) {
+    return UserModel(
+      id: this.id,
+      name: name ?? this.name,
+      email: email ?? this.email,
+      role: role ?? this.role,
+      course: course ?? this.course,
+      attendancePercentage: attendancePercentage ?? this.attendancePercentage,
+      profileImageUrl: profileImageUrl ?? this.profileImageUrl,
+    );
   }
 }

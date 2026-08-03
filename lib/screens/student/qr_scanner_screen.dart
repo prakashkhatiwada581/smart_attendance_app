@@ -5,14 +5,15 @@ import '../../providers/auth_provider.dart';
 import '../../services/database_service.dart';
 
 class QRScannerScreen extends StatefulWidget {
-  const QRScannerScreen({Key? key}) : super(key: key);
+  final VoidCallback? onSuccess;
+  
+  const QRScannerScreen({super.key, this.onSuccess});
 
   @override
   State<QRScannerScreen> createState() => _QRScannerScreenState();
 }
 
 class _QRScannerScreenState extends State<QRScannerScreen> {
-  final DatabaseService _dbService = DatabaseService();
   bool _isProcessing = false;
 
   void _onDetect(BarcodeCapture capture) async {
@@ -26,13 +27,18 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         
         try {
           final user = context.read<AuthProvider>().user;
+          final dbService = context.read<DatabaseService>();
           if (user != null) {
-            bool success = await _dbService.markAttendance(user.id, qrData);
+            bool success = await dbService.markAttendance(user.id, qrData);
             if (!mounted) return;
             
             if (success) {
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Attendance Marked Successfully!'), backgroundColor: Colors.green));
-              Navigator.pop(context);
+              if (widget.onSuccess != null) {
+                widget.onSuccess!();
+              } else {
+                Navigator.pop(context);
+              }
             } else {
               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Invalid or Expired QR Code!'), backgroundColor: Colors.red));
               setState(() => _isProcessing = false);

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../models/user_model.dart';
 import '../services/auth_service.dart';
+import '../services/notification_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
+  final NotificationService _notificationService = NotificationService();
   UserModel? _user;
   bool _isLoading = true;
 
@@ -15,12 +17,22 @@ class AuthProvider extends ChangeNotifier {
     _init();
   }
 
-  void _init() {
+  Future<void> _init() async {
+    final ready = await _authService.initialize();
+    if (!ready) {
+      _isLoading = false;
+      notifyListeners();
+      return;
+    }
+
     _authService.userStream.listen((firebaseUser) async {
       if (firebaseUser == null) {
         _user = null;
       } else {
         _user = await _authService.getCurrentUser();
+        if (_user != null) {
+          _notificationService.init(_user!.id);
+        }
       }
       _isLoading = false;
       notifyListeners();
@@ -53,5 +65,29 @@ class AuthProvider extends ChangeNotifier {
     await _authService.logout();
     _user = null;
     notifyListeners();
+  }
+
+  Future<void> updateProfile({String? name, String? profilePath}) async {
+    if (_user == null) return;
+    
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      // In a real app, you'd upload the image to Firebase Storage first
+      // For now, we update the local model and Firestore
+      final updatedUser = _user!.copyWith(
+        name: name,
+        profileImageUrl: profilePath
+      );
+      
+      await _authService.updateUser(updatedUser);
+      _user = updatedUser;
+    } catch (e) {
+      debugPrint("Update profile error: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 }

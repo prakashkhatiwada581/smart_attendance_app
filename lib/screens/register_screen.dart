@@ -8,7 +8,7 @@ import 'teacher/teacher_dashboard.dart';
 import 'student/student_dashboard.dart';
 
 class RegisterScreen extends StatefulWidget {
-  const RegisterScreen({Key? key}) : super(key: key);
+  const RegisterScreen({super.key});
 
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -37,17 +37,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void _register() async {
     if (_formKey.currentState!.validate()) {
       try {
-        await context.read<AuthProvider>().register(
-              _emailCtrl.text.trim(),
-              _passwordCtrl.text.trim(),
-              _nameCtrl.text.trim(),
-              _role,
-              _courseCtrl.text.trim(),
-            );
+        final authProvider = context.read<AuthProvider>();
+        await authProvider.register(
+          _emailCtrl.text.trim(),
+          _passwordCtrl.text.trim(),
+          _nameCtrl.text.trim(),
+          _role,
+          _courseCtrl.text.trim(),
+        );
 
-        final user = context.read<AuthProvider>().user;
+        if (!mounted) return;
 
-        if (user != null && mounted) {
+        final user = authProvider.user;
+
+        if (user != null) {
           if (user.role == "teacher") {
             Navigator.pushAndRemoveUntil(
               context,
@@ -98,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       },
       decoration: InputDecoration(
         filled: true,
-        fillColor: Colors.white.withOpacity(.10),
+        fillColor: Colors.white.withValues(alpha: 0.10),
         labelText: label,
         labelStyle: const TextStyle(color: Colors.white70),
         prefixIcon: Icon(
@@ -146,22 +149,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     width: 430,
                     padding: const EdgeInsets.all(30),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(.12),
+                      color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(
-                        color: Colors.white.withOpacity(.20),
+                        color: Colors.white.withValues(alpha: 0.20),
                       ),
                     ),
                     child: Form(
                       key: _formKey,
                       child: Column(
                         children: [
-
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: Colors.white.withOpacity(.15),
+                              color: Colors.white.withValues(alpha: 0.15),
                             ),
                             child: const Icon(
                               Icons.person_add_alt_1_rounded,
@@ -169,9 +171,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               color: Colors.white,
                             ),
                           ),
-
                           const SizedBox(height: 25),
-
                           const Text(
                             "Create Account",
                             style: TextStyle(
@@ -180,51 +180,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-
                           const SizedBox(height: 8),
-
                           Text(
                             "Register to use the QR Attendance System",
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(.75),
+                              color: Colors.white.withValues(alpha: 0.75),
                               fontSize: 15,
                             ),
                           ),
-
                           const SizedBox(height: 30),
-
                           _buildField(
                             controller: _nameCtrl,
                             label: "Full Name",
                             icon: Icons.person,
                           ),
-
                           const SizedBox(height: 18),
-
                           _buildField(
                             controller: _emailCtrl,
                             label: "Email",
                             icon: Icons.email,
                           ),
-
                           const SizedBox(height: 18),
-
                           _buildField(
                             controller: _courseCtrl,
                             label: "Course / Department",
                             icon: Icons.school,
                           ),
-
                           const SizedBox(height: 18),
-
                           DropdownButtonFormField<String>(
-                            value: _role,
+                            initialValue: _role,
                             dropdownColor: const Color(0xff203A43),
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.white.withOpacity(.10),
+                              fillColor: Colors.white.withValues(alpha: 0.10),
                               labelText: "Role",
                               labelStyle:
                                   const TextStyle(color: Colors.white70),
@@ -233,8 +223,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 color: Colors.white,
                               ),
                               border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(18),
                                 borderSide: BorderSide.none,
                               ),
                             ),
@@ -260,9 +249,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               });
                             },
                           ),
-
                           const SizedBox(height: 18),
-
                           _buildField(
                             controller: _passwordCtrl,
                             label: "Password",
@@ -277,37 +264,30 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               ),
                               onPressed: () {
                                 setState(() {
-                                  _obscurePassword =
-                                      !_obscurePassword;
+                                  _obscurePassword = !_obscurePassword;
                                 });
                               },
                             ),
                           ),
-
                           const SizedBox(height: 30),
-
                           SizedBox(
                             width: double.infinity,
                             height: 55,
                             child: ElevatedButton(
-                              onPressed:
-                                  isLoading ? null : _register,
+                              onPressed: isLoading ? null : _register,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
-                                foregroundColor:
-                                    Colors.blue.shade900,
+                                foregroundColor: Colors.blue.shade900,
                                 elevation: 8,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(18),
+                                  borderRadius: BorderRadius.circular(18),
                                 ),
                               ),
                               child: isLoading
                                   ? const SizedBox(
                                       width: 24,
                                       height: 24,
-                                      child:
-                                          CircularProgressIndicator(
+                                      child: CircularProgressIndicator(
                                         strokeWidth: 3,
                                       ),
                                     )
@@ -315,15 +295,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       "REGISTER",
                                       style: TextStyle(
                                         fontSize: 18,
-                                        fontWeight:
-                                            FontWeight.bold,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                             ),
                           ),
-
                           const SizedBox(height: 20),
-
                           TextButton(
                             onPressed: () {
                               Navigator.pop(context);

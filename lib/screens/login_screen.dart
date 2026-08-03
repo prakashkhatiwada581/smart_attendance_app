@@ -9,7 +9,7 @@ import 'teacher/teacher_dashboard.dart';
 import 'student/student_dashboard.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key}) : super(key: key);
+  const LoginScreen({super.key});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -25,14 +25,17 @@ class _LoginScreenState extends State<LoginScreen> {
   void _login() async {
     if (_formKey.currentState!.validate()) {
       try {
-        await context.read<AuthProvider>().login(
-              _emailCtrl.text.trim(),
-              _passwordCtrl.text.trim(),
-            );
+        final authProvider = context.read<AuthProvider>();
+        await authProvider.login(
+          _emailCtrl.text.trim(),
+          _passwordCtrl.text.trim(),
+        );
 
-        final user = context.read<AuthProvider>().user;
+        if (!mounted) return;
 
-        if (user != null && mounted) {
+        final user = authProvider.user;
+
+        if (user != null) {
           if (user.role == 'teacher') {
             Navigator.pushReplacement(
               context,
@@ -50,12 +53,14 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         }
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Login Failed\n$e"),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Login Failed\n$e"),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
     }
   }
@@ -92,21 +97,20 @@ class _LoginScreenState extends State<LoginScreen> {
                     width: 420,
                     padding: const EdgeInsets.all(30),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(.12),
+                      color: Colors.white.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(30),
                       border: Border.all(
-                        color: Colors.white.withOpacity(.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                       ),
                     ),
                     child: Form(
                       key: _formKey,
                       child: Column(
                         children: [
-
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(.15),
+                              color: Colors.white.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -115,9 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Colors.white,
                             ),
                           ),
-
                           const SizedBox(height: 25),
-
                           const Text(
                             "Welcome Back",
                             style: TextStyle(
@@ -126,27 +128,22 @@ class _LoginScreenState extends State<LoginScreen> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-
                           const SizedBox(height: 8),
-
                           Text(
                             "Login to your QR Attendance Account",
                             style: TextStyle(
-                              color: Colors.white.withOpacity(.7),
+                              color: Colors.white.withValues(alpha: 0.7),
                               fontSize: 15,
                             ),
                           ),
-
                           const SizedBox(height: 35),
-
                           TextFormField(
                             controller: _emailCtrl,
                             style: const TextStyle(color: Colors.white),
-                            validator: (v) =>
-                                v!.isEmpty ? "Enter Email" : null,
+                            validator: (v) => v!.isEmpty ? "Enter Email" : null,
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.white.withOpacity(.1),
+                              fillColor: Colors.white.withValues(alpha: 0.1),
                               prefixIcon: const Icon(
                                 Icons.email,
                                 color: Colors.white,
@@ -155,15 +152,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               labelStyle:
                                   const TextStyle(color: Colors.white70),
                               border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(18),
                                 borderSide: BorderSide.none,
                               ),
                             ),
                           ),
-
                           const SizedBox(height: 20),
-
                           TextFormField(
                             controller: _passwordCtrl,
                             obscureText: _obscure,
@@ -172,7 +166,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 v!.isEmpty ? "Enter Password" : null,
                             decoration: InputDecoration(
                               filled: true,
-                              fillColor: Colors.white.withOpacity(.1),
+                              fillColor: Colors.white.withValues(alpha: 0.1),
                               prefixIcon: const Icon(
                                 Icons.lock,
                                 color: Colors.white,
@@ -194,15 +188,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               labelStyle:
                                   const TextStyle(color: Colors.white70),
                               border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(18),
                                 borderSide: BorderSide.none,
                               ),
                             ),
                           ),
-
                           const SizedBox(height: 30),
-
                           SizedBox(
                             width: double.infinity,
                             height: 55,
@@ -213,16 +204,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                 backgroundColor: Colors.white,
                                 foregroundColor: Colors.blue.shade900,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(18),
+                                  borderRadius: BorderRadius.circular(18),
                                 ),
                               ),
                               child: loading
                                   ? const SizedBox(
                                       width: 25,
                                       height: 25,
-                                      child:
-                                          CircularProgressIndicator(
+                                      child: CircularProgressIndicator(
                                         strokeWidth: 3,
                                       ),
                                     )
@@ -235,16 +224,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                             ),
                           ),
-
                           const SizedBox(height: 20),
-
                           TextButton(
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      const RegisterScreen(),
+                                  builder: (_) => const RegisterScreen(),
                                 ),
                               );
                             },

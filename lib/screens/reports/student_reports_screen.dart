@@ -7,12 +7,12 @@ import '../../models/attendance_record.dart';
 import 'package:intl/intl.dart';
 
 class StudentReportsScreen extends StatelessWidget {
-  const StudentReportsScreen({Key? key}) : super(key: key);
+  const StudentReportsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final user = context.read<AuthProvider>().user;
-    final dbService = DatabaseService();
+    final dbService = context.read<DatabaseService>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Attendance Reports')),

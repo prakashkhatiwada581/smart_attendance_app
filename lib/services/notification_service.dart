@@ -1,9 +1,10 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 class NotificationService {
-  final FirebaseMessaging _fcm = FirebaseMessaging.instance;
-  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  FirebaseMessaging get _fcm => FirebaseMessaging.instance;
+  FirebaseFirestore get _db => FirebaseFirestore.instance;
 
   Future<void> init(String userId) async {
     NotificationSettings settings = await _fcm.requestPermission();
@@ -25,7 +26,7 @@ class NotificationService {
         'fcmToken': token,
       });
     } catch (e) {
-      print("Error saving FCM token: $e");
+      debugPrint("Error saving FCM token: $e");
     }
   }
 }
