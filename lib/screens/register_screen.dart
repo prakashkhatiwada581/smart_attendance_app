@@ -120,12 +120,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xff0F2027),
-              Color(0xff203A43),
-              Color(0xff2C5364),
+              const Color(0xFF0D47A1),
+              Theme.of(context).primaryColor,
+              const Color(0xFF1E88E5),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -220,7 +220,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                           DropdownButtonFormField<String>(
                             value: _role,
-                            dropdownColor: const Color(0xff203A43),
+                            dropdownColor: const Color(0xFF0D47A1),
                             style: const TextStyle(color: Colors.white),
                             decoration: InputDecoration(
                               filled: true,
@@ -295,7 +295,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.white,
                                 foregroundColor:
-                                    Colors.blue.shade900,
+                                    Theme.of(context).primaryColor,
                                 elevation: 8,
                                 shape: RoundedRectangleBorder(
                                   borderRadius:

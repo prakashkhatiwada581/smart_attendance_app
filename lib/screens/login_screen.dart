@@ -66,12 +66,12 @@ class _LoginScreenState extends State<LoginScreen> {
 
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [
-              Color(0xff0F2027),
-              Color(0xff203A43),
-              Color(0xff2C5364),
+              const Color(0xFF0D47A1),
+              Theme.of(context).primaryColor,
+              const Color(0xFF1E88E5),
             ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -211,7 +211,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               style: ElevatedButton.styleFrom(
                                 elevation: 8,
                                 backgroundColor: Colors.white,
-                                foregroundColor: Colors.blue.shade900,
+                                foregroundColor: Theme.of(context).primaryColor,
                                 shape: RoundedRectangleBorder(
                                   borderRadius:
                                       BorderRadius.circular(18),

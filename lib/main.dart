@@ -8,18 +8,21 @@ import 'screens/splash_screen.dart';
 // IMPORTANT: Run `flutter fire configure` to generate `firebase_options.dart`,
 // and then import it here and pass DefaultFirebaseOptions.currentPlatform
 // to Firebase.initializeApp().
-// import 'firebase_options.dart';
+import 'firebase_options.dart';
+
 // Main application entry point
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
     // If you have firebase_options.dart:
-    // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-    await Firebase.initializeApp(); 
+    await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform);
+    // await Firebase.initializeApp();
   } catch (e) {
-    debugPrint("Firebase initialization failed. Check Firebase configuration and try again.");
+    debugPrint(
+        "Firebase initialization failed. Check Firebase configuration and try again.");
   }
-  
+
   runApp(
     MultiProvider(
       providers: [
