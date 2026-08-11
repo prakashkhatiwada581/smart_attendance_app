@@ -102,7 +102,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       key: _formKey,
                       child: Column(
                         children: [
-
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
@@ -115,20 +114,16 @@ class _LoginScreenState extends State<LoginScreen> {
                               color: Colors.white,
                             ),
                           ),
-
                           const SizedBox(height: 25),
-
                           const Text(
-                            "Welcome Back",
+                            "Welcome",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 30,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-
                           const SizedBox(height: 8),
-
                           Text(
                             "Login to your QR Attendance Account",
                             style: TextStyle(
@@ -136,14 +131,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               fontSize: 15,
                             ),
                           ),
-
                           const SizedBox(height: 35),
-
                           TextFormField(
                             controller: _emailCtrl,
                             style: const TextStyle(color: Colors.white),
-                            validator: (v) =>
-                                v!.isEmpty ? "Enter Email" : null,
+                            validator: (v) => v!.isEmpty ? "Enter Email" : null,
                             decoration: InputDecoration(
                               filled: true,
                               fillColor: Colors.white.withOpacity(.1),
@@ -155,15 +147,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               labelStyle:
                                   const TextStyle(color: Colors.white70),
                               border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(18),
                                 borderSide: BorderSide.none,
                               ),
                             ),
                           ),
-
                           const SizedBox(height: 20),
-
                           TextFormField(
                             controller: _passwordCtrl,
                             obscureText: _obscure,
@@ -194,15 +183,12 @@ class _LoginScreenState extends State<LoginScreen> {
                               labelStyle:
                                   const TextStyle(color: Colors.white70),
                               border: OutlineInputBorder(
-                                borderRadius:
-                                    BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(18),
                                 borderSide: BorderSide.none,
                               ),
                             ),
                           ),
-
                           const SizedBox(height: 30),
-
                           SizedBox(
                             width: double.infinity,
                             height: 55,
@@ -213,16 +199,14 @@ class _LoginScreenState extends State<LoginScreen> {
                                 backgroundColor: Colors.white,
                                 foregroundColor: Theme.of(context).primaryColor,
                                 shape: RoundedRectangleBorder(
-                                  borderRadius:
-                                      BorderRadius.circular(18),
+                                  borderRadius: BorderRadius.circular(18),
                                 ),
                               ),
                               child: loading
                                   ? const SizedBox(
                                       width: 25,
                                       height: 25,
-                                      child:
-                                          CircularProgressIndicator(
+                                      child: CircularProgressIndicator(
                                         strokeWidth: 3,
                                       ),
                                     )
@@ -235,16 +219,13 @@ class _LoginScreenState extends State<LoginScreen> {
                                     ),
                             ),
                           ),
-
                           const SizedBox(height: 20),
-
                           TextButton(
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (_) =>
-                                      const RegisterScreen(),
+                                  builder: (_) => const RegisterScreen(),
                                 ),
                               );
                             },
