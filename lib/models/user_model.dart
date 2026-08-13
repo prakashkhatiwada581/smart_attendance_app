@@ -49,7 +49,7 @@ class UserModel {
     String? profileImageUrl,
   }) {
     return UserModel(
-      id: this.id,
+      id: id,
       name: name ?? this.name,
       email: email ?? this.email,
       role: role ?? this.role,

@@ -1,9 +1,11 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
+import '../utils/theme.dart';
+import '../widgets/gradient_card.dart';
+import '../widgets/custom_snackbar.dart';
 import 'teacher/teacher_dashboard.dart';
 import 'student/student_dashboard.dart';
 
@@ -19,7 +21,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _courseCtrl = TextEditingController();
-
   final _formKey = GlobalKey<FormState>();
 
   String _role = 'student';
@@ -51,70 +52,26 @@ class _RegisterScreenState extends State<RegisterScreen> {
         final user = authProvider.user;
 
         if (user != null) {
+          CustomSnackbar.showSuccess(context, "Account created! Welcome, ${user.name}");
           if (user.role == "teacher") {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(
-                builder: (_) => const TeacherDashboard(),
-              ),
+              MaterialPageRoute(builder: (_) => const TeacherDashboard()),
               (route) => false,
             );
           } else {
             Navigator.pushAndRemoveUntil(
               context,
-              MaterialPageRoute(
-                builder: (_) => const StudentDashboard(),
-              ),
+              MaterialPageRoute(builder: (_) => const StudentDashboard()),
               (route) => false,
             );
           }
         }
       } catch (e) {
         if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text("Registration Failed\n$e"),
-            backgroundColor: Colors.red,
-          ),
-        );
+        CustomSnackbar.showError(context, "Registration Failed: $e");
       }
     }
-  }
-
-  Widget _buildField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    bool obscure = false,
-    Widget? suffix,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: obscure,
-      style: const TextStyle(color: Colors.white),
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return "Enter $label";
-        }
-        return null;
-      },
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.white.withValues(alpha: 0.10),
-        labelText: label,
-        labelStyle: const TextStyle(color: Colors.white70),
-        prefixIcon: Icon(
-          icon,
-          color: Colors.white,
-        ),
-        suffixIcon: suffix,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(18),
-          borderSide: BorderSide.none,
-        ),
-      ),
-    );
   }
 
   @override
@@ -122,199 +79,184 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final isLoading = context.watch<AuthProvider>().isLoading;
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        title: const Text("Create Account"),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xff0F2027),
-              Color(0xff203A43),
-              Color(0xff2C5364),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          gradient: AppTheme.backgroundGradient,
         ),
         child: SafeArea(
           child: Center(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(30),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(
-                    sigmaX: 15,
-                    sigmaY: 15,
-                  ),
-                  child: Container(
-                    width: 430,
-                    padding: const EdgeInsets.all(30),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.20),
-                      ),
-                    ),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.white.withValues(alpha: 0.15),
+              padding: const EdgeInsets.all(24),
+              child: GradientCard(
+                borderRadius: 28,
+                padding: const EdgeInsets.all(28),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      // Role Icon Header
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: AppTheme.primaryGradient,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.primaryBlue.withValues(alpha: 0.35),
+                              blurRadius: 20,
+                              spreadRadius: 2,
                             ),
-                            child: const Icon(
-                              Icons.person_add_alt_1_rounded,
-                              size: 70,
-                              color: Colors.white,
-                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.person_add_alt_1_rounded,
+                          size: 40,
+                          color: Colors.white,
+                        ),
+                      ).animate().scale(duration: 600.ms, curve: Curves.elasticOut),
+
+                      const SizedBox(height: 20),
+                      const Text(
+                        "Join Smart Attendance",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ).animate().fadeIn(),
+
+                      const SizedBox(height: 6),
+                      Text(
+                        "Fill in your details to set up your profile",
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 13,
+                        ),
+                      ).animate().fadeIn(delay: 100.ms),
+
+                      const SizedBox(height: 28),
+
+                      // Full Name
+                      TextFormField(
+                        controller: _nameCtrl,
+                        style: const TextStyle(color: Colors.white),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? "Enter full name" : null,
+                        decoration: const InputDecoration(
+                          labelText: "Full Name",
+                          prefixIcon: Icon(Icons.person_outline_rounded),
+                        ),
+                      ).animate().fadeIn(delay: 150.ms),
+
+                      const SizedBox(height: 16),
+
+                      // Email
+                      TextFormField(
+                        controller: _emailCtrl,
+                        style: const TextStyle(color: Colors.white),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? "Enter email address" : null,
+                        decoration: const InputDecoration(
+                          labelText: "Email Address",
+                          prefixIcon: Icon(Icons.alternate_email_rounded),
+                        ),
+                      ).animate().fadeIn(delay: 200.ms),
+
+                      const SizedBox(height: 16),
+
+                      // Course / Department
+                      TextFormField(
+                        controller: _courseCtrl,
+                        style: const TextStyle(color: Colors.white),
+                        validator: (v) => (v == null || v.trim().isEmpty) ? "Enter course or department" : null,
+                        decoration: const InputDecoration(
+                          labelText: "Course / Department",
+                          hintText: "e.g. Computer Science, B.Tech CS",
+                          prefixIcon: Icon(Icons.school_outlined),
+                        ),
+                      ).animate().fadeIn(delay: 250.ms),
+
+                      const SizedBox(height: 16),
+
+                      // Role Dropdown
+                      DropdownButtonFormField<String>(
+                        initialValue: _role,
+                        dropdownColor: AppTheme.surfaceColor,
+                        style: const TextStyle(color: Colors.white, fontSize: 14),
+                        decoration: const InputDecoration(
+                          labelText: "Account Role",
+                          prefixIcon: Icon(Icons.badge_outlined),
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: "student",
+                            child: Text("Student"),
                           ),
-                          const SizedBox(height: 25),
-                          const Text(
-                            "Create Account",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 30,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            "Register to use the QR Attendance System",
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.75),
-                              fontSize: 15,
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          _buildField(
-                            controller: _nameCtrl,
-                            label: "Full Name",
-                            icon: Icons.person,
-                          ),
-                          const SizedBox(height: 18),
-                          _buildField(
-                            controller: _emailCtrl,
-                            label: "Email",
-                            icon: Icons.email,
-                          ),
-                          const SizedBox(height: 18),
-                          _buildField(
-                            controller: _courseCtrl,
-                            label: "Course / Department",
-                            icon: Icons.school,
-                          ),
-                          const SizedBox(height: 18),
-                          DropdownButtonFormField<String>(
-                            initialValue: _role,
-                            dropdownColor: const Color(0xff203A43),
-                            style: const TextStyle(color: Colors.white),
-                            decoration: InputDecoration(
-                              filled: true,
-                              fillColor: Colors.white.withValues(alpha: 0.10),
-                              labelText: "Role",
-                              labelStyle:
-                                  const TextStyle(color: Colors.white70),
-                              prefixIcon: const Icon(
-                                Icons.badge,
-                                color: Colors.white,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(18),
-                                borderSide: BorderSide.none,
-                              ),
-                            ),
-                            items: const [
-                              DropdownMenuItem(
-                                value: "student",
-                                child: Text(
-                                  "Student",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                              DropdownMenuItem(
-                                value: "teacher",
-                                child: Text(
-                                  "Teacher",
-                                  style: TextStyle(color: Colors.white),
-                                ),
-                              ),
-                            ],
-                            onChanged: (value) {
-                              setState(() {
-                                _role = value!;
-                              });
-                            },
-                          ),
-                          const SizedBox(height: 18),
-                          _buildField(
-                            controller: _passwordCtrl,
-                            label: "Password",
-                            icon: Icons.lock,
-                            obscure: _obscurePassword,
-                            suffix: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_off
-                                    : Icons.visibility,
-                                color: Colors.white70,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 55,
-                            child: ElevatedButton(
-                              onPressed: isLoading ? null : _register,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: Colors.blue.shade900,
-                                elevation: 8,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                              ),
-                              child: isLoading
-                                  ? const SizedBox(
-                                      width: 24,
-                                      height: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 3,
-                                      ),
-                                    )
-                                  : const Text(
-                                      "REGISTER",
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: const Text(
-                              "Already have an account? Login",
-                              style: TextStyle(
-                                color: Colors.white,
-                              ),
-                            ),
+                          DropdownMenuItem(
+                            value: "teacher",
+                            child: Text("Teacher / Instructor"),
                           ),
                         ],
-                      ),
-                    ),
+                        onChanged: (value) {
+                          if (value != null) setState(() => _role = value);
+                        },
+                      ).animate().fadeIn(delay: 300.ms),
+
+                      const SizedBox(height: 16),
+
+                      // Password
+                      TextFormField(
+                        controller: _passwordCtrl,
+                        obscureText: _obscurePassword,
+                        style: const TextStyle(color: Colors.white),
+                        validator: (v) => (v == null || v.length < 6) ? "Password must be at least 6 characters" : null,
+                        decoration: InputDecoration(
+                          labelText: "Password",
+                          prefixIcon: const Icon(Icons.lock_outline_rounded),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off_rounded : Icons.visibility_rounded,
+                              color: Colors.white38,
+                            ),
+                            onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                          ),
+                        ),
+                      ).animate().fadeIn(delay: 350.ms),
+
+                      const SizedBox(height: 28),
+
+                      // Register Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 56,
+                        child: ElevatedButton(
+                          onPressed: isLoading ? null : _register,
+                          child: isLoading
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                                )
+                              : const Text("CREATE ACCOUNT"),
+                        ),
+                      ).animate().fadeIn(delay: 400.ms),
+
+                      const SizedBox(height: 20),
+
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text(
+                          "Already have an account? Sign In",
+                          style: TextStyle(color: Colors.white70, fontSize: 14),
+                        ),
+                      ).animate().fadeIn(delay: 450.ms),
+                    ],
                   ),
                 ),
               ),

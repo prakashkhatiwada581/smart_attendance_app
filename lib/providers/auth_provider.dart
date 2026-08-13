@@ -61,6 +61,50 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> signInWithGoogle() async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      _user = await _authService.signInWithGoogle();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> sendOtp(String email) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _authService.sendOtp(email);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> verifyOtp(String email, String otp) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      return await _authService.verifyOtp(email, otp);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> resetPassword(String newPassword) async {
+    _isLoading = true;
+    notifyListeners();
+    try {
+      await _authService.resetPassword(newPassword);
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
   Future<void> logout() async {
     await _authService.logout();
     _user = null;

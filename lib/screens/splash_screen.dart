@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
+import '../utils/theme.dart';
 import 'login_screen.dart';
 import 'teacher/teacher_dashboard.dart';
 import 'student/student_dashboard.dart';
@@ -22,13 +24,11 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _checkAuth() async {
     debugPrint("SplashScreen: Starting auth check...");
-    // Give time for the animation/splash to be seen
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(milliseconds: 2400));
     if (!mounted) return;
 
     final auth = context.read<AuthProvider>();
     
-    // If it's still loading, we wait a bit more, but not forever
     int retryCount = 0;
     while (auth.isLoading && retryCount < 3) {
       debugPrint("SplashScreen: Auth is still loading, waiting... ($retryCount)");
@@ -37,25 +37,32 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     if (!mounted) return;
-    
-    debugPrint("SplashScreen: Auth check complete. Authenticated: ${auth.isAuthenticated}, User: ${auth.user?.name}");
 
     if (auth.isAuthenticated && auth.user != null) {
       if (auth.user!.role == 'teacher') {
-        debugPrint("SplashScreen: Navigating to Teacher Dashboard");
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const TeacherDashboard()),
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const TeacherDashboard(),
+            transitionsBuilder: (_, anim, __, child) => FadeTransition(opacity: anim, child: child),
+            transitionDuration: const Duration(milliseconds: 600),
+          ),
         );
       } else {
-        debugPrint("SplashScreen: Navigating to Student Dashboard");
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const StudentDashboard()),
+          PageRouteBuilder(
+            pageBuilder: (_, __, ___) => const StudentDashboard(),
+            transitionsBuilder: (_, anim, __, child) => FadeTransition(opacity: anim, child: child),
+            transitionDuration: const Duration(milliseconds: 600),
+          ),
         );
       }
     } else {
-      debugPrint("SplashScreen: Navigating to Login Screen");
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        PageRouteBuilder(
+          pageBuilder: (_, __, ___) => const LoginScreen(),
+          transitionsBuilder: (_, anim, __, child) => FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 600),
+        ),
       );
     }
   }
@@ -63,23 +70,111 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).primaryColor,
-      body: const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppTheme.backgroundGradient,
+        ),
+        child: Stack(
           children: [
-            Icon(Icons.qr_code_scanner, size: 100, color: Colors.white),
-            SizedBox(height: 20),
-            Text(
-              'Smart Attendance',
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
+            // Background Decorative Circles
+            Positioned(
+              top: -100,
+              right: -100,
+              child: Container(
+                width: 300,
+                height: 300,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.15),
+                ),
+              ).animate().scale(duration: 1.5.seconds, curve: Curves.easeOut),
+            ),
+            Positioned(
+              bottom: -80,
+              left: -80,
+              child: Container(
+                width: 250,
+                height: 250,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppTheme.accentCyan.withValues(alpha: 0.1),
+                ),
+              ).animate().scale(duration: 1.8.seconds, curve: Curves.easeOut),
+            ),
+
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Animated Logo Container
+                  Container(
+                    padding: const EdgeInsets.all(28),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: AppTheme.primaryGradient,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primaryBlue.withValues(alpha: 0.4),
+                          blurRadius: 30,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.qr_code_scanner_rounded,
+                      size: 72,
+                      color: Colors.white,
+                    ),
+                  )
+                      .animate()
+                      .scale(duration: 800.ms, curve: Curves.elasticOut)
+                      .shimmer(delay: 800.ms, duration: 1200.ms),
+
+                  const SizedBox(height: 30),
+
+                  // App Title
+                  const Text(
+                    'Smart Attendance',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                    ),
+                  )
+                      .animate()
+                      .fadeIn(delay: 300.ms, duration: 600.ms)
+                      .slideY(begin: 0.3, end: 0, curve: Curves.easeOut),
+
+                  const SizedBox(height: 8),
+
+                  const Text(
+                    'Next-Gen QR Code Attendance System',
+                    style: TextStyle(
+                      color: Colors.white60,
+                      fontSize: 14,
+                      letterSpacing: 0.5,
+                    ),
+                  )
+                      .animate()
+                      .fadeIn(delay: 500.ms, duration: 600.ms),
+
+                  const SizedBox(height: 60),
+
+                  // Loading Indicator
+                  const SizedBox(
+                    width: 32,
+                    height: 32,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 3,
+                      valueColor: AlwaysStoppedAnimation<Color>(AppTheme.accentCyan),
+                    ),
+                  )
+                      .animate()
+                      .fadeIn(delay: 700.ms, duration: 400.ms),
+                ],
               ),
             ),
-            SizedBox(height: 40),
-            CircularProgressIndicator(color: Colors.white),
           ],
         ),
       ),

@@ -1,10 +1,13 @@
 import 'dart:io';
-import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../providers/auth_provider.dart';
+import '../../utils/theme.dart';
+import '../../widgets/gradient_card.dart';
+
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -27,6 +30,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     }
   }
 
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
   Future<void> _pickImage(ImageSource source) async {
     final pickedFile = await _picker.pickImage(source: source);
     if (pickedFile != null) {
@@ -39,20 +48,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _showImagePickerOptions() {
     showModalBottomSheet(
       context: context,
+      backgroundColor: AppTheme.surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (context) => SafeArea(
         child: Wrap(
           children: [
             ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Gallery'),
+              leading: const Icon(Icons.photo_library_rounded, color: AppTheme.accentBlue),
+              title: const Text('Choose from Gallery', style: TextStyle(color: Colors.white)),
               onTap: () {
                 _pickImage(ImageSource.gallery);
                 Navigator.pop(context);
               },
             ),
             ListTile(
-              leading: const Icon(Icons.photo_camera),
-              title: const Text('Camera'),
+              leading: const Icon(Icons.photo_camera_rounded, color: AppTheme.accentCyan),
+              title: const Text('Take a Photo', style: TextStyle(color: Colors.white)),
               onTap: () {
                 _pickImage(ImageSource.camera);
                 Navigator.pop(context);
@@ -89,111 +102,110 @@ class _ProfileScreenState extends State<ProfileScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text("Edit Profile"),
-        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xff0F2027),
-              Color(0xff203A43),
-              Color(0xff2C5364),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          gradient: AppTheme.backgroundGradient,
         ),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(25),
+            padding: const EdgeInsets.all(24),
             child: Column(
               children: [
+                // Profile Image Picker Avatar
                 Center(
                   child: Stack(
                     children: [
                       CircleAvatar(
-                        radius: 60,
-                        backgroundColor: Colors.white24,
+                        radius: 64,
+                        backgroundColor: AppTheme.primaryBlue.withValues(alpha: 0.25),
                         backgroundImage: _getProfileImage(user.profileImageUrl),
                         child: _imageFile == null && (user.profileImageUrl == null || user.profileImageUrl!.isEmpty)
-                            ? const Icon(Icons.person, size: 60, color: Colors.white)
+                            ? const Icon(Icons.person_rounded, size: 64, color: Colors.white)
                             : null,
-                      ),
+                      ).animate().scale(duration: 500.ms),
                       Positioned(
                         bottom: 0,
                         right: 0,
                         child: GestureDetector(
                           onTap: _showImagePickerOptions,
                           child: Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: const BoxDecoration(
-                              color: Colors.blue,
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              gradient: AppTheme.primaryGradient,
                               shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: AppTheme.primaryBlue.withValues(alpha: 0.4),
+                                  blurRadius: 10,
+                                ),
+                              ],
                             ),
-                            child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                            child: const Icon(Icons.camera_alt_rounded, color: Colors.white, size: 20),
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 30),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(20),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.05),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white10),
+
+                const SizedBox(height: 32),
+
+                // Edit Profile Form Card
+                GradientCard(
+                  borderRadius: 24,
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      TextField(
+                        controller: _nameController,
+                        style: const TextStyle(color: Colors.white),
+                        decoration: const InputDecoration(
+                          labelText: "Full Name",
+                          prefixIcon: Icon(Icons.person_outline_rounded),
+                        ),
                       ),
-                      child: Column(
-                        children: [
-                          TextField(
-                            controller: _nameController,
-                            style: const TextStyle(color: Colors.white),
-                            decoration: const InputDecoration(
-                              labelText: "Full Name",
-                              prefixIcon: Icon(Icons.person),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          _buildReadOnlyField("Email", user.email, Icons.email),
-                          const SizedBox(height: 20),
-                          _buildReadOnlyField("Role", user.role.toUpperCase(), Icons.badge),
-                          const SizedBox(height: 20),
-                          _buildReadOnlyField("Course", user.course, Icons.school),
-                        ],
-                      ),
-                    ),
+                      const SizedBox(height: 18),
+                      _buildReadOnlyField("Email Address", user.email, Icons.alternate_email_rounded),
+                      const SizedBox(height: 18),
+                      _buildReadOnlyField("Role", user.role.toUpperCase(), Icons.badge_outlined),
+                      const SizedBox(height: 18),
+                      _buildReadOnlyField("Course / Department", user.course, Icons.school_outlined),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 40),
+                ).animate().fadeIn(delay: 150.ms),
+
+                const SizedBox(height: 36),
+
                 SizedBox(
                   width: double.infinity,
-                  height: 55,
+                  height: 56,
                   child: ElevatedButton(
                     onPressed: authProvider.isLoading
                         ? null
                         : () async {
+                            final messenger = ScaffoldMessenger.of(context);
+                            final nav = Navigator.of(context);
                             await authProvider.updateProfile(
                               name: _nameController.text.trim(),
                               profilePath: _imageFile?.path,
                             );
                             if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text("Profile Updated")),
+                              messenger.showSnackBar(
+                                const SnackBar(content: Text("Profile updated successfully!")),
                               );
-                              Navigator.pop(context);
+                              nav.pop();
                             }
                           },
                     child: authProvider.isLoading
-                        ? const CircularProgressIndicator()
+                        ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
                         : const Text("SAVE CHANGES"),
                   ),
-                ),
+                ).animate().fadeIn(delay: 250.ms),
               ],
             ),
           ),
@@ -206,13 +218,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return TextFormField(
       initialValue: value,
       readOnly: true,
-      style: const TextStyle(color: Colors.white70),
+      style: TextStyle(color: Colors.white.withValues(alpha: 0.7)),
       decoration: InputDecoration(
         labelText: label,
         prefixIcon: Icon(icon, color: Colors.white38),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15),
-          borderSide: const BorderSide(color: Colors.white10),
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
         ),
       ),
     );

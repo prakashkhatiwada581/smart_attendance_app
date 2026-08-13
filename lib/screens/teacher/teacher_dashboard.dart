@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/database_service.dart';
-import '../login_screen.dart';
+import '../../utils/theme.dart';
+import '../../widgets/gradient_card.dart';
+import '../../widgets/section_header.dart';
 import 'qr_generator_screen.dart';
+import '../reports/teacher_reports_screen.dart';
 import '../common/settings_view.dart';
 import '../../models/user_model.dart';
 
@@ -20,6 +24,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
   final List<Widget> _widgetOptions = [
     const TeacherHomeView(),
     const QRGeneratorScreen(),
+    const TeacherReportsScreen(),
     const SettingsView(),
   ];
 
@@ -34,15 +39,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xff0F2027),
-              Color(0xff203A43),
-              Color(0xff2C5364),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          gradient: AppTheme.backgroundGradient,
         ),
         child: IndexedStack(
           index: _selectedIndex,
@@ -50,9 +47,9 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color(0xff0F2027),
-        unselectedItemColor: Colors.white54,
-        selectedItemColor: Theme.of(context).primaryColor,
+        backgroundColor: const Color(0xFF0D1127),
+        unselectedItemColor: Colors.white38,
+        selectedItemColor: AppTheme.primaryBlue,
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -62,6 +59,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
           BottomNavigationBarItem(
             icon: Icon(Icons.qr_code_rounded),
             label: 'QR Gen',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.analytics_rounded),
+            label: 'Reports',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings_rounded),
@@ -82,57 +83,77 @@ class TeacherHomeView extends StatelessWidget {
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
     final dbService = context.read<DatabaseService>();
-    final theme = Theme.of(context);
 
     return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Header Section
+          // Header Banner Section
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 40),
+            padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 36),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.8)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              gradient: AppTheme.headerGradient,
               borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(40),
-                bottomRight: Radius.circular(40),
+                bottomLeft: Radius.circular(36),
+                bottomRight: Radius.circular(36),
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Teacher Panel',
-                  style: TextStyle(color: Colors.white70, fontSize: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${AppTheme.getGreeting()}, Instructor',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        "TEACHER",
+                        style: TextStyle(color: AppTheme.accentCyan, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
-                  'Welcome, ${user?.name ?? "Teacher"}',
+                  user?.name ?? "Teacher",
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 30),
-                // Course Info Card
-                Container(
+                const SizedBox(height: 24),
+
+                // Assigned Course Info Card
+                GradientCard(
+                  opacity: 0.15,
                   padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(24),
-                  ),
                   child: Row(
                     children: [
                       Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.white.withValues(alpha: 0.2),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(Icons.school_rounded, color: Colors.white, size: 32),
@@ -143,15 +164,15 @@ class TeacherHomeView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Assigned Course',
+                              'Assigned Department / Course',
                               style: TextStyle(
                                 color: Colors.white70,
-                                fontSize: 14,
+                                fontSize: 12,
                               ),
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              user?.course ?? '-',
+                              user?.course ?? 'Not Assigned',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 20,
@@ -163,7 +184,7 @@ class TeacherHomeView extends StatelessWidget {
                       ),
                     ],
                   ),
-                )
+                ).animate().fadeIn().scale(begin: const Offset(0.95, 0.95)),
               ],
             ),
           ),
@@ -173,40 +194,43 @@ class TeacherHomeView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Attendance Insights',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                const SectionHeader(
+                  title: 'Attendance Insights',
+                  icon: Icons.insights_rounded,
                 ),
-                const SizedBox(height: 16),
                 
                 // Low Attendance List
                 StreamBuilder<List<UserModel>>(
                   stream: dbService.getLowAttendanceStudents(user?.course),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
-                      return const Center(child: Padding(
-                        padding: EdgeInsets.all(20.0),
-                        child: CircularProgressIndicator(),
-                      ));
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(30.0),
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
                     }
                     if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                      return Container(
+                      return GradientCard(
                         padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.green.withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(color: Colors.green.withOpacity(0.3)),
-                        ),
-                        child: const Row(
+                        child: Row(
                           children: [
-                            Icon(Icons.check_circle_outline_rounded, color: Colors.green),
-                            SizedBox(width: 12),
-                            Text('All students meet attendance goals!',
-                              style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppTheme.successGreen.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.check_circle_rounded, color: AppTheme.successGreen, size: 24),
+                            ),
+                            const SizedBox(width: 14),
+                            const Expanded(
+                              child: Text(
+                                'All students currently meet the required attendance goals!',
+                                style: TextStyle(color: AppTheme.successGreen, fontWeight: FontWeight.bold, fontSize: 14),
+                              ),
+                            ),
                           ],
                         ),
                       );
@@ -221,52 +245,67 @@ class TeacherHomeView extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final student = students[index];
                         final isCritical = student.attendancePercentage < 60;
-                        final color = isCritical ? Colors.redAccent : Colors.orangeAccent;
+                        final color = isCritical ? AppTheme.errorRed : AppTheme.warningOrange;
                         
-                        return Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.05),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.white10),
-                          ),
+                        return GradientCard(
+                          padding: const EdgeInsets.all(18),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    student.name,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
-                                      color: Colors.white,
-                                    ),
+                                  Row(
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 18,
+                                        backgroundColor: color.withValues(alpha: 0.2),
+                                        child: Text(
+                                          student.name.isNotEmpty ? student.name[0] : 'S',
+                                          style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 14),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        student.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  Text(
-                                    '${student.attendancePercentage.toStringAsFixed(1)}%',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: color,
-                                      fontSize: 16,
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: color.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    child: Text(
+                                      '${student.attendancePercentage.toStringAsFixed(1)}%',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: color,
+                                        fontSize: 14,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 14),
                               ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
+                                borderRadius: BorderRadius.circular(8),
                                 child: LinearProgressIndicator(
                                   value: student.attendancePercentage / 100,
-                                  backgroundColor: Colors.white10,
+                                  backgroundColor: Colors.white.withValues(alpha: 0.08),
                                   color: color,
                                   minHeight: 8,
                                 ),
                               ),
                             ],
                           ),
-                        );
+                        ).animate().fadeIn(delay: Duration(milliseconds: 100 * index));
                       },
                     );
                   },

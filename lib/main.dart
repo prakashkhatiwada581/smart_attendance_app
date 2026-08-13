@@ -5,16 +5,8 @@ import 'services/database_service.dart';
 import 'utils/theme.dart';
 import 'screens/splash_screen.dart';
 
-// IMPORTANT: Run `flutter fire configure` to generate `firebase_options.dart`,
-// and then import it here and pass DefaultFirebaseOptions.currentPlatform
-// to Firebase.initializeApp().
-// import 'firebase_options.dart';
-// Main application entry point
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
-  // We initialize Firebase in the background or within the AuthProvider
-  // to prevent the app from hanging if configuration is missing.
   
   runApp(
     MultiProvider(

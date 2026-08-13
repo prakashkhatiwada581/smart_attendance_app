@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../login_screen.dart';
+import '../../utils/theme.dart';
+import '../../widgets/gradient_card.dart';
+import '../../widgets/section_header.dart';
 import 'qr_scanner_screen.dart';
 import '../reports/student_reports_screen.dart';
 import '../common/settings_view.dart';
@@ -22,7 +25,10 @@ class _StudentDashboardState extends State<StudentDashboard> {
   void initState() {
     super.initState();
     _widgetOptions = [
-      const StudentHomeView(),
+      StudentHomeView(
+        onScanRequested: () => setState(() => _selectedIndex = 1),
+        onReportsRequested: () => setState(() => _selectedIndex = 2),
+      ),
       QRScannerScreen(
         onSuccess: () {
           setState(() {
@@ -46,15 +52,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Color(0xff0F2027),
-              Color(0xff203A43),
-              Color(0xff2C5364),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          gradient: AppTheme.backgroundGradient,
         ),
         child: IndexedStack(
           index: _selectedIndex,
@@ -62,9 +60,9 @@ class _StudentDashboardState extends State<StudentDashboard> {
         ),
       ),
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: const Color(0xff0F2027),
-        unselectedItemColor: Colors.white54,
-        selectedItemColor: Theme.of(context).primaryColor,
+        backgroundColor: const Color(0xFF0D1127),
+        unselectedItemColor: Colors.white38,
+        selectedItemColor: AppTheme.primaryBlue,
         type: BottomNavigationBarType.fixed,
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(
@@ -92,69 +90,103 @@ class _StudentDashboardState extends State<StudentDashboard> {
 }
 
 class StudentHomeView extends StatelessWidget {
-  const StudentHomeView({super.key});
+  final VoidCallback onScanRequested;
+  final VoidCallback onReportsRequested;
+
+  const StudentHomeView({
+    super.key,
+    required this.onScanRequested,
+    required this.onReportsRequested,
+  });
 
   @override
   Widget build(BuildContext context) {
     final user = context.watch<AuthProvider>().user;
-    final theme = Theme.of(context);
+    final percentage = user?.attendancePercentage ?? 0;
+    final isGoodAttendance = percentage >= 75;
 
     return SingleChildScrollView(
       child: Column(
         children: [
-          // Header Section
+          // Header Section Banner
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 40),
+            padding: const EdgeInsets.only(top: 60, left: 24, right: 24, bottom: 36),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [theme.primaryColor, theme.primaryColor.withOpacity(0.8)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              gradient: AppTheme.headerGradient,
               borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(40),
-                bottomRight: Radius.circular(40),
+                bottomLeft: Radius.circular(36),
+                bottomRight: Radius.circular(36),
               ),
-              boxShadow: const [
-                BoxShadow(color: Colors.black26, offset: Offset(0, 10), blurRadius: 20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryBlue.withValues(alpha: 0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
+                ),
               ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Student Panel',
-                  style: TextStyle(color: Colors.white70, fontSize: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '${AppTheme.getGreeting()}, Student',
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.75),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Text(
+                        "STUDENT",
+                        style: TextStyle(color: AppTheme.accentCyan, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
-                  'Hi, ${user?.name ?? "Student"}!',
+                  user?.name ?? "Student",
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 30),
+                const SizedBox(height: 24),
+
                 // Attendance Summary Card
-                Container(
+                GradientCard(
+                  opacity: 0.15,
                   padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.15),
-                    borderRadius: BorderRadius.circular(24),
-                  ),
                   child: Row(
                     children: [
                       Stack(
                         alignment: Alignment.center,
                         children: [
-                          SValueWidget(
-                            value: (user?.attendancePercentage ?? 0) / 100,
-                            color: (user?.attendancePercentage ?? 0) >= 75 ? Colors.greenAccent : Colors.orangeAccent,
+                          SizedBox(
+                            width: 72,
+                            height: 72,
+                            child: CircularProgressIndicator(
+                              value: (percentage / 100).clamp(0.0, 1.0),
+                              backgroundColor: Colors.white.withValues(alpha: 0.1),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                isGoodAttendance ? AppTheme.successGreen : AppTheme.warningOrange,
+                              ),
+                              strokeWidth: 7,
+                            ),
                           ),
                           Text(
-                            '${user?.attendancePercentage.toStringAsFixed(0) ?? "0"}%',
+                            '${percentage.toStringAsFixed(0)}%',
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 20,
@@ -164,29 +196,34 @@ class StudentHomeView extends StatelessWidget {
                         ],
                       ),
                       const SizedBox(width: 20),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Attendance Status',
-                              style: TextStyle(
+                              isGoodAttendance ? 'Great Attendance!' : 'Low Attendance Alert',
+                              style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 4),
+                            const SizedBox(height: 4),
                             Text(
-                              'Track your progress and stay consistent!',
-                              style: TextStyle(color: Colors.white70, fontSize: 13),
+                              isGoodAttendance
+                                  ? 'You meet the 75% requirement for exams.'
+                                  : 'Warning: Attendance is under 75% limit.',
+                              style: TextStyle(
+                                color: Colors.white.withValues(alpha: 0.7),
+                                fontSize: 12,
+                              ),
                             ),
                           ],
                         ),
                       ),
                     ],
                   ),
-                )
+                ).animate().fadeIn().scale(begin: const Offset(0.95, 0.95)),
               ],
             ),
           ),
@@ -196,76 +233,116 @@ class StudentHomeView extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Upcoming Schedule',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                // Quick Action Cards
+                const SectionHeader(
+                  title: 'Quick Actions',
+                  icon: Icons.bolt_rounded,
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: Colors.white10),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Row(
-                        children: [
-                          Icon(Icons.calendar_today_rounded, color: Colors.blueAccent, size: 20),
-                          SizedBox(width: 10),
-                          Text(
-                            'Today\u0027s Major',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white70,
+                Row(
+                  children: [
+                    Expanded(
+                      child: GradientCard(
+                        onTap: onScanRequested,
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: AppTheme.primaryBlue.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.qr_code_scanner_rounded, color: AppTheme.accentBlue, size: 28),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 12),
+                            const Text(
+                              'Scan QR Code',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Mark live attendance',
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ).animate().fadeIn(delay: 100.ms),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: GradientCard(
+                        onTap: onReportsRequested,
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                color: AppTheme.accentCyan.withValues(alpha: 0.2),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.bar_chart_rounded, color: AppTheme.accentCyan, size: 28),
+                            ),
+                            const SizedBox(height: 12),
+                            const Text(
+                              'View Reports',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Weekly outline & log',
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ).animate().fadeIn(delay: 200.ms),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 28),
+
+                // Enrolled Course Info
+                const SectionHeader(
+                  title: 'Current Major / Course',
+                  icon: Icons.school_rounded,
+                ),
+                GradientCard(
+                  padding: const EdgeInsets.all(20),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Icon(Icons.calendar_today_rounded, color: AppTheme.accentBlue, size: 24),
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        user?.course ?? 'General Studies',
-                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Session starts at 09:00 AM',
-                        style: TextStyle(color: Colors.white54, fontSize: 14),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user?.course ?? 'General Studies',
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Enrolled Student • Regular Session',
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 12),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                )
+                ).animate().fadeIn(delay: 300.ms),
               ],
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class SValueWidget extends StatelessWidget {
-  final double value;
-  final Color color;
-  const SValueWidget({super.key, required this.value, required this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 70,
-      height: 70,
-      child: CircularProgressIndicator(
-        value: value,
-        backgroundColor: Colors.white12,
-        color: color,
-        strokeWidth: 6,
       ),
     );
   }
