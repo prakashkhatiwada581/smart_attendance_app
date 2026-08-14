@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "924821486500",
+    "firebase_url": "https://qr-attendance-16860-default-rtdb.firebaseio.com",
+    "project_id": "qr-attendance-16860",
+    "storage_bucket": "qr-attendance-16860.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:924821486500:android:f594e345a83ba56cf2df31",
+        "android_client_info": {
+          "package_name": "com.example.smart_attendance_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "924821486500-mtev1t0iv73tlc2q0d1j1l4lk57ak120.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCc_elEO02WoKIpC_AVrAQV_BhxtFqZcuA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "924821486500-mtev1t0iv73tlc2q0d1j1l4lk57ak120.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
