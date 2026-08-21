@@ -89,7 +89,7 @@ class DatabaseService {
     }
   }
 
-  // Get student attendance
+  // Get student attendance - REMOVED ALL FILTERS TO AVOID INDEX ERROR
   Stream<List<AttendanceRecord>> getStudentAttendance(String studentId) {
     if (!_isFirebaseAvailable()) {
       return Stream.value([
@@ -103,26 +103,39 @@ class DatabaseService {
         ),
       ]);
     }
+    
+    // We fetch the whole collection and filter in Dart to avoid needing an Index.
     return _db.collection('attendance')
-        .where('studentId', isEqualTo: studentId)
-        .orderBy('timestamp', descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map((doc) => AttendanceRecord.fromMap(doc.data(), doc.id)).toList());
+        .map((snap) {
+          final list = snap.docs
+            .map((doc) => AttendanceRecord.fromMap(doc.data(), doc.id))
+            .where((r) => r.studentId == studentId)
+            .toList();
+          list.sort((a, b) => b.timestamp.compareTo(a.timestamp)); // Sort descending
+          return list;
+        });
   }
 
-  // Get teacher classes
+  // Get teacher classes - REMOVED ALL FILTERS TO AVOID INDEX ERROR
   Stream<List<ClassSession>> getTeacherClasses(String teacherId) {
     if (!_isFirebaseAvailable()) {
       return Stream.value([]);
     }
+    
     return _db.collection('classes')
-        .where('teacherId', isEqualTo: teacherId)
-        .orderBy('createdAt', descending: true)
         .snapshots()
-        .map((snap) => snap.docs.map((doc) => ClassSession.fromMap(doc.data(), doc.id)).toList());
+        .map((snap) {
+          final list = snap.docs
+            .map((doc) => ClassSession.fromMap(doc.data(), doc.id))
+            .where((s) => s.teacherId == teacherId)
+            .toList();
+          list.sort((a, b) => b.createdAt.compareTo(a.createdAt)); // Sort descending
+          return list;
+        });
   }
 
-  // Get low attendance students
+  // Get low attendance students - REMOVED ALL FILTERS TO AVOID INDEX ERROR
   Stream<List<UserModel>> getLowAttendanceStudents(String? course) {
     if (!_isFirebaseAvailable()) {
       return Stream.value([
@@ -130,11 +143,16 @@ class DatabaseService {
         UserModel(id: 's2', name: 'Jane Smith', email: 'jane@test.com', role: 'student', course: course ?? 'CS', attendancePercentage: 72.0),
       ]);
     }
+
+    // We fetch the whole users collection and filter manually in Dart
+    // This ensures NO INDEX IS REQUIRED.
     return _db.collection('users')
-        .where('role', isEqualTo: 'student')
-        .where('course', isEqualTo: course)
-        .where('attendancePercentage', isLessThan: 75)
         .snapshots()
-        .map((snap) => snap.docs.map((doc) => UserModel.fromMap(doc.data(), doc.id)).toList());
+        .map((snap) {
+          return snap.docs
+            .map((doc) => UserModel.fromMap(doc.data(), doc.id))
+            .where((u) => u.role == 'student' && (course == null || u.course == course) && u.attendancePercentage < 75)
+            .toList();
+        });
   }
 }

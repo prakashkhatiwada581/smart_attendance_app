@@ -76,25 +76,22 @@ class _QRScannerScreenState extends State<QRScannerScreen> {
         actions: [
           IconButton(
             icon: ValueListenableBuilder(
-              valueListenable: cameraController.torchState,
+              valueListenable: cameraController,
               builder: (context, state, child) {
-                switch (state) {
-                  case TorchState.off:
-                    return const Icon(Icons.flash_off_rounded, color: Colors.white70);
-                  case TorchState.on:
-                    return const Icon(Icons.flash_on_rounded, color: AppTheme.accentCyan);
-                }
+                return Icon(
+                  state.torchState == TorchState.on
+                      ? Icons.flash_on_rounded
+                      : Icons.flash_off_rounded,
+                  color: state.torchState == TorchState.on
+                      ? AppTheme.accentCyan
+                      : Colors.white70,
+                );
               },
             ),
             onPressed: () => cameraController.toggleTorch(),
           ),
           IconButton(
-            icon: ValueListenableBuilder(
-              valueListenable: cameraController.cameraFacingState,
-              builder: (context, state, child) {
-                return const Icon(Icons.cameraswitch_rounded, color: Colors.white70);
-              },
-            ),
+            icon: const Icon(Icons.cameraswitch_rounded, color: Colors.white70),
             onPressed: () => cameraController.switchCamera(),
           ),
         ],

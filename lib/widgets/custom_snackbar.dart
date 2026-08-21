@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
-import '../utils/theme.dart';
 
-/// Custom themed snackbar helpers for success, error, and info messages.
 class CustomSnackbar {
   static void showSuccess(BuildContext context, String message) {
-    _show(context, message, AppTheme.successGreen, Icons.check_circle_rounded);
+    _show(context, message, Colors.greenAccent, Icons.check_circle_outline_rounded);
   }
 
   static void showError(BuildContext context, String message) {
-    _show(context, message, AppTheme.errorRed, Icons.error_rounded);
+    _show(context, message, Colors.redAccent, Icons.error_outline_rounded);
   }
 
   static void showInfo(BuildContext context, String message) {
-    _show(context, message, AppTheme.infoBlue, Icons.info_rounded);
+    _show(context, message, Colors.blueAccent, Icons.info_outline_rounded);
   }
 
   static void showWarning(BuildContext context, String message) {
-    _show(context, message, AppTheme.warningOrange, Icons.warning_rounded);
+    _show(context, message, Colors.orangeAccent, Icons.warning_amber_rounded);
   }
 
   static void _show(BuildContext context, String message, Color color, IconData icon) {
@@ -25,33 +23,21 @@ class CustomSnackbar {
       SnackBar(
         content: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: color, size: 22),
-            ),
-            const SizedBox(width: 14),
+            Icon(icon, color: Colors.white),
+            const SizedBox(width: 12),
             Expanded(
               child: Text(
                 message,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
               ),
             ),
           ],
         ),
-        backgroundColor: AppTheme.cardColor,
+        backgroundColor: color.withValues(alpha: 0.8),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        margin: const EdgeInsets.all(16),
         duration: const Duration(seconds: 3),
-        elevation: 8,
       ),
     );
   }

@@ -1,52 +1,51 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
-/// A reusable glassmorphism card widget with optional gradient border.
 class GradientCard extends StatelessWidget {
   final Widget child;
-  final EdgeInsetsGeometry padding;
+  final EdgeInsetsGeometry? padding;
   final double borderRadius;
-  final double opacity;
-  final LinearGradient? borderGradient;
   final VoidCallback? onTap;
+  final double? opacity;
 
   const GradientCard({
     super.key,
     required this.child,
-    this.padding = const EdgeInsets.all(20),
-    this.borderRadius = 24,
-    this.opacity = 0.08,
-    this.borderGradient,
+    this.padding,
+    this.borderRadius = 20,
     this.onTap,
+    this.opacity,
   });
 
   @override
   Widget build(BuildContext context) {
-    Widget card = ClipRRect(
-      borderRadius: BorderRadius.circular(borderRadius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: opacity),
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.1),
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(borderRadius),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+          child: Material(
+            color: Colors.white.withValues(alpha: opacity ?? 0.05),
+            child: InkWell(
+              onTap: onTap,
+              child: Padding(
+                padding: padding ?? const EdgeInsets.all(16),
+                child: child,
+              ),
             ),
           ),
-          child: child,
         ),
       ),
     );
-
-    if (onTap != null) {
-      return GestureDetector(
-        onTap: onTap,
-        child: card,
-      );
-    }
-
-    return card;
   }
 }

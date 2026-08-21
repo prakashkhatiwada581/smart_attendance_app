@@ -53,6 +53,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text("Reset Password"),
+        backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => Navigator.pop(context),

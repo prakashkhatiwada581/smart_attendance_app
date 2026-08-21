@@ -26,22 +26,35 @@ class _StudentDashboardState extends State<StudentDashboard> {
     super.initState();
     _widgetOptions = [
       StudentHomeView(
-        onScanRequested: () => setState(() => _selectedIndex = 1),
+        onScanRequested: _openScanner,
         onReportsRequested: () => setState(() => _selectedIndex = 2),
       ),
-      QRScannerScreen(
-        onSuccess: () {
-          setState(() {
-            _selectedIndex = 0;
-          });
-        },
-      ),
+      const SizedBox.shrink(), // Placeholder for Scan (Index 1) - because we use Navigator.push
       const StudentReportsScreen(),
       const SettingsView(),
     ];
   }
 
+  // Opens scanner as a pushed route so the camera lifecycle is correctly managed
+  void _openScanner() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => QRScannerScreen(
+          onSuccess: () {
+            Navigator.pop(context);
+            setState(() => _selectedIndex = 0);
+          },
+        ),
+      ),
+    );
+  }
+
   void _onItemTapped(int index) {
+    if (index == 1) {
+      _openScanner();
+      return;
+    }
     setState(() {
       _selectedIndex = index;
     });
@@ -343,6 +356,26 @@ class StudentHomeView extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class SValueWidget extends StatelessWidget {
+  final double value;
+  final Color color;
+  const SValueWidget({super.key, required this.value, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 70,
+      height: 70,
+      child: CircularProgressIndicator(
+        value: value,
+        backgroundColor: Colors.white.withValues(alpha: 0.1),
+        color: color,
+        strokeWidth: 6,
       ),
     );
   }

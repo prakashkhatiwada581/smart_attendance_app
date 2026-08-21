@@ -11,6 +11,7 @@ import '../../utils/theme.dart';
 import '../../widgets/gradient_card.dart';
 import '../../widgets/empty_state_widget.dart';
 import '../../widgets/section_header.dart';
+import '../../widgets/animated_list_item.dart';
 
 class StudentReportsScreen extends StatelessWidget {
   const StudentReportsScreen({super.key});
@@ -31,7 +32,7 @@ class StudentReportsScreen extends StatelessWidget {
           ? const EmptyStateWidget(
               icon: Icons.person_off_rounded,
               title: 'Not Logged In',
-              subtitle: 'Please sign in to view your reports',
+              message: 'Please sign in to view your reports',
             )
           : StreamBuilder<List<AttendanceRecord>>(
               stream: dbService.getStudentAttendance(user.id),
@@ -39,11 +40,30 @@ class StudentReportsScreen extends StatelessWidget {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
                 }
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.error_outline_rounded, color: Colors.redAccent, size: 48),
+                          const SizedBox(height: 16),
+                          Text(
+                            'Failed to load attendance data.\n${snapshot.error}',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.redAccent, fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
                   return const EmptyStateWidget(
                     icon: Icons.analytics_outlined,
                     title: 'No Records Found',
-                    subtitle: 'Your attendance records will appear here once you scan class QR codes.',
+                    message: 'Your attendance records will appear here once you scan class QR codes.',
                   );
                 }
 
@@ -61,9 +81,8 @@ class StudentReportsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // Weekly Activity Bar Chart Header
                       const SectionHeader(
-                        title: 'Weekly Attendance Outline',
+                        title: 'Weekly Overview',
                         icon: Icons.bar_chart_rounded,
                       ),
                       
@@ -79,7 +98,15 @@ class StudentReportsScreen extends StatelessWidget {
                                   maxY: 10,
                                   barTouchData: BarTouchData(
                                     enabled: true,
-                                    touchTooltipData: BarTouchTooltipData(),
+                                    touchTooltipData: BarTouchTooltipData(
+                                      getTooltipColor: (group) => AppTheme.surfaceColor.withValues(alpha: 0.9),
+                                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                                        return BarTooltipItem(
+                                          '${rod.toY.toInt()} sessions',
+                                          const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                        );
+                                      },
+                                    ),
                                   ),
                                   titlesData: FlTitlesData(
                                     show: true,
@@ -94,7 +121,7 @@ class StudentReportsScreen extends StatelessWidget {
                                               padding: const EdgeInsets.only(top: 8.0),
                                               child: Text(
                                                 days[index],
-                                                style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12),
+                                                style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 10),
                                               ),
                                             );
                                           }
@@ -102,9 +129,7 @@ class StudentReportsScreen extends StatelessWidget {
                                         },
                                       ),
                                     ),
-                                    leftTitles: const AxisTitles(
-                                      sideTitles: SideTitles(showTitles: true, interval: 2, reservedSize: 28),
-                                    ),
+                                    leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                                     topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                                     rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                                   ),
@@ -123,12 +148,9 @@ class StudentReportsScreen extends StatelessWidget {
                                       barRods: [
                                         BarChartRodData(
                                           toY: entry.value.toDouble(),
-                                          gradient: AppTheme.primaryGradient,
-                                          width: 18,
-                                          borderRadius: const BorderRadius.only(
-                                            topLeft: Radius.circular(6),
-                                            topRight: Radius.circular(6),
-                                          ),
+                                          color: AppTheme.primaryBlue,
+                                          width: 14,
+                                          borderRadius: BorderRadius.circular(4),
                                         )
                                       ],
                                     );
@@ -142,9 +164,8 @@ class StudentReportsScreen extends StatelessWidget {
 
                       const SizedBox(height: 28),
 
-                      // Attendance Summary Breakdown Card
                       const SectionHeader(
-                        title: 'Overall Status Ratio',
+                        title: 'Attendance Breakdown',
                         icon: Icons.pie_chart_outline_rounded,
                       ),
                       
@@ -153,22 +174,22 @@ class StudentReportsScreen extends StatelessWidget {
                         child: Row(
                           children: [
                             SizedBox(
-                              width: 100,
-                              height: 100,
+                              width: 90,
+                              height: 90,
                               child: PieChart(
                                 PieChartData(
                                   sectionsSpace: 4,
-                                  centerSpaceRadius: 28,
+                                  centerSpaceRadius: 25,
                                   sections: [
                                     PieChartSectionData(
-                                      color: AppTheme.successGreen,
+                                      color: Colors.greenAccent,
                                       value: user.attendancePercentage,
                                       title: '${user.attendancePercentage.toInt()}%',
                                       radius: 20,
-                                      titleStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white),
+                                      titleStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.black87),
                                     ),
                                     PieChartSectionData(
-                                      color: AppTheme.errorRed.withValues(alpha: 0.8),
+                                      color: Colors.redAccent.withValues(alpha: 0.3),
                                       value: (100 - user.attendancePercentage).clamp(0, 100),
                                       title: '',
                                       radius: 16,
@@ -182,12 +203,12 @@ class StudentReportsScreen extends StatelessWidget {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  _buildLegendItem(AppTheme.successGreen, "Attended Classes", "${records.length} sessions"),
+                                  _buildLegendItem(Colors.greenAccent, "Attended", "${records.length} sessions"),
                                   const SizedBox(height: 10),
                                   _buildLegendItem(
                                     AppTheme.accentBlue,
-                                    "Target Goal",
-                                    "75.0% Minimum",
+                                    "Target",
+                                    "75.0% Goal",
                                   ),
                                 ],
                               ),
@@ -198,9 +219,8 @@ class StudentReportsScreen extends StatelessWidget {
 
                       const SizedBox(height: 28),
 
-                      // Attendance Logs List
                       const SectionHeader(
-                        title: 'Detailed Session Logs',
+                        title: 'History',
                         icon: Icons.history_rounded,
                       ),
 
@@ -208,63 +228,66 @@ class StudentReportsScreen extends StatelessWidget {
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
                         itemCount: records.length,
-                        separatorBuilder: (_, __) => const SizedBox(height: 10),
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
                         itemBuilder: (context, index) {
                           final record = records[index];
-                          return GradientCard(
-                            padding: const EdgeInsets.all(16),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(10),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.successGreen.withValues(alpha: 0.15),
-                                    shape: BoxShape.circle,
+                          return AnimatedListItem(
+                            index: index,
+                            child: GradientCard(
+                              padding: const EdgeInsets.all(16),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(10),
+                                    decoration: BoxDecoration(
+                                      color: Colors.greenAccent.withValues(alpha: 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(Icons.check_circle_outline_rounded, color: Colors.greenAccent, size: 24),
                                   ),
-                                  child: const Icon(Icons.check_circle_rounded, color: AppTheme.successGreen, size: 24),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Class Attendance Marked',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15,
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Class Present',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 15,
+                                          ),
                                         ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      Text(
-                                        DateFormat.yMMMMd().add_jm().format(record.timestamp),
-                                        style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.5),
-                                          fontSize: 12,
+                                        const SizedBox(height: 2),
+                                        Text(
+                                          DateFormat.yMMMMd().add_jm().format(record.timestamp),
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(alpha: 0.5),
+                                            fontSize: 12,
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.successGreen.withValues(alpha: 0.2),
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                  child: const Text(
-                                    'PRESENT',
-                                    style: TextStyle(
-                                      color: AppTheme.successGreen,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.bold,
+                                      ],
                                     ),
                                   ),
-                                ),
-                              ],
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: Colors.greenAccent.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      'VERIFIED',
+                                      style: TextStyle(
+                                        color: Colors.greenAccent,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ).animate().fadeIn(delay: Duration(milliseconds: 80 * index));
+                          );
                         },
                       ),
                     ],
@@ -279,8 +302,8 @@ class StudentReportsScreen extends StatelessWidget {
     return Row(
       children: [
         Container(
-          width: 12,
-          height: 12,
+          width: 10,
+          height: 10,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
         const SizedBox(width: 10),

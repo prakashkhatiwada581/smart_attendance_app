@@ -106,9 +106,15 @@ class AuthProvider extends ChangeNotifier {
   }
 
   Future<void> logout() async {
-    await _authService.logout();
-    _user = null;
+    _isLoading = true;
     notifyListeners();
+    try {
+      await _authService.logout();
+      _user = null;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   Future<void> updateProfile({String? name, String? profilePath}) async {
@@ -118,8 +124,6 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // In a real app, you'd upload the image to Firebase Storage first
-      // For now, we update the local model and Firestore
       final updatedUser = _user!.copyWith(
         name: name,
         profileImageUrl: profilePath

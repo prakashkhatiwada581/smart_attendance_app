@@ -24,8 +24,6 @@ class SettingsView extends StatelessWidget {
     return FileImage(File(url));
   }
 
-  
-
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
@@ -108,7 +106,7 @@ class SettingsView extends StatelessWidget {
               title: "Edit Profile",
               subtitle: "Update full name & profile picture",
               onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
+                Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(
                   builder: (_) => const ProfileScreen(),
                 ));
               },
@@ -122,7 +120,7 @@ class SettingsView extends StatelessWidget {
               title: "Notifications",
               subtitle: "Manage session & attendance alerts",
               onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
+                Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(
                   builder: (_) => const NotificationSettingsScreen(),
                 ));
               },
@@ -136,7 +134,7 @@ class SettingsView extends StatelessWidget {
               title: "Privacy & Password",
               subtitle: "Change account password",
               onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
+                Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(
                   builder: (_) => const ChangePasswordScreen(),
                 ));
               },
@@ -150,7 +148,7 @@ class SettingsView extends StatelessWidget {
               title: "Help & Project Info",
               subtitle: "FAQ, system details & guide",
               onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
+                Navigator.of(context, rootNavigator: true).push(MaterialPageRoute(
                   builder: (_) => const AboutScreen(),
                 ));
               },
@@ -172,19 +170,47 @@ class SettingsView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),
-                onPressed: () async {
-                  await authProvider.logout();
-                  if (context.mounted) {
-                    Navigator.of(context).pushAndRemoveUntil(
-                      MaterialPageRoute(builder: (_) => const LoginScreen()),
-                      (route) => false,
-                    );
-                  }
-                },
+                onPressed: () => _showLogoutDialog(context, authProvider),
               ),
             ).animate().fadeIn(delay: 300.ms),
           ],
         ),
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context, AuthProvider authProvider) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: AppTheme.surfaceColor,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Sign Out"),
+        content: const Text("Are you sure you want to log out of your account?"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text("CANCEL", style: TextStyle(color: Colors.white70)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.errorRed,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            ),
+            onPressed: () async {
+              Navigator.pop(dialogContext); // Close dialog
+              await authProvider.logout();
+              if (context.mounted) {
+                // Use the original context to navigate, and use rootNavigator
+                Navigator.of(context, rootNavigator: true).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
+              }
+            },
+            child: const Text("LOGOUT"),
+          ),
+        ],
       ),
     );
   }

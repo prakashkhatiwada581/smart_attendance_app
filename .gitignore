@@ -43,8 +43,14 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+.gradle/
+**/android/.gradle/
+**/android/local.properties
+**/android/build/
+report_source.html
 
 # Zip archives
 *.zip
 flutter.zip
+
 

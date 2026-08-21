@@ -9,7 +9,10 @@ import '../firebase_options.dart';
 class AuthService {
   FirebaseAuth get _auth => FirebaseAuth.instance;
   FirebaseFirestore get _db => FirebaseFirestore.instance;
+  
+  // Initialize GoogleSignIn once
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  
   bool _isReady = false;
 
   // For Prototype/Demo mode when Firebase is not configured
@@ -22,7 +25,6 @@ class AuthService {
 
     try {
       if (Firebase.apps.isEmpty) {
-        // Add a timeout to prevent hanging if Firebase is not configured
         await Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,
         ).timeout(const Duration(seconds: 10));
@@ -96,13 +98,10 @@ class AuthService {
   // Login
   Future<UserModel?> login(String email, String password) async {
     if (!_isReady) {
-      // For the prototype, if no one registered yet, create a default
-      // If someone registered (in _mockUser), check if email matches or just allow it
       if (_mockUser != null && _mockUser!.email == email) {
         return _mockUser;
       }
       
-      // Default demo user if no registration happened in this session
       _mockUser = UserModel(
         id: 'demo-user',
         name: email.split('@').first,
@@ -144,10 +143,10 @@ class AuthService {
     }
 
     try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      final googleUser = await _googleSignIn.signIn();
       if (googleUser == null) return null;
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final googleAuth = await googleUser.authentication;
       final AuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
@@ -161,12 +160,11 @@ class AuthService {
         if (doc.exists) {
           return UserModel.fromMap(doc.data()!, doc.id);
         } else {
-          // Create new user if first time
           final newUser = UserModel(
             id: user.uid,
             name: user.displayName ?? 'New User',
             email: user.email ?? '',
-            role: 'student', // Default role
+            role: 'student',
             course: 'Not Assigned',
           );
           await _db.collection('users').doc(user.uid).set(newUser.toMap());
@@ -186,18 +184,14 @@ class AuthService {
       debugPrint("Demo Mode: OTP '1234' sent to $email");
       return;
     }
-    // Note: Standard Firebase Auth sends a reset link. 
-    // Real OTP would require a custom backend/cloud function.
-    // For this prototype, we simulate the OTP flow.
     await _auth.sendPasswordResetEmail(email: email);
   }
 
   // Password Reset - Step 2: Verify OTP
   Future<bool> verifyOtp(String email, String otp) async {
     if (!_isReady) {
-      return otp == "1234"; // Fixed OTP for demo
+      return otp == "1234";
     }
-    // In a real app, this would check against a DB.
     return true; 
   }
 
@@ -207,7 +201,6 @@ class AuthService {
       debugPrint("Demo Mode: Password updated to $newPassword");
       return;
     }
-    // For Firebase, this usually happens via the link, but if we are authenticated:
     if (_auth.currentUser != null) {
       await _auth.currentUser!.updatePassword(newPassword);
     }

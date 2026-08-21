@@ -36,10 +36,16 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
         }
       } catch (e) {
         if (mounted) {
-          CustomSnackbar.showError(context, "Error resetting password: $e");
+          _showError(e.toString());
         }
       }
     }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), backgroundColor: Colors.redAccent),
+    );
   }
 
   @override
@@ -50,6 +56,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text("New Password"),
+        backgroundColor: Colors.transparent,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new_rounded),
           onPressed: () => Navigator.pop(context),

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../providers/auth_provider.dart';
-import '../../utils/theme.dart';
 import '../../widgets/gradient_card.dart';
 import '../../widgets/custom_snackbar.dart';
 
@@ -14,35 +12,29 @@ class ChangePasswordScreen extends StatefulWidget {
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _currentPassCtrl = TextEditingController();
   final _newPassCtrl = TextEditingController();
   final _confirmPassCtrl = TextEditingController();
-
-  bool _obscureCurrent = true;
-  bool _obscureNew = true;
-  bool _obscureConfirm = true;
+  final _formKey = GlobalKey<FormState>();
+  bool _obscure = true;
 
   @override
   void dispose() {
-    _currentPassCtrl.dispose();
     _newPassCtrl.dispose();
     _confirmPassCtrl.dispose();
     super.dispose();
   }
 
-  void _changePassword() async {
+  void _updatePassword() async {
     if (_formKey.currentState!.validate()) {
-      final auth = context.read<AuthProvider>();
       try {
-        await auth.resetPassword(_newPassCtrl.text.trim());
+        await context.read<AuthProvider>().resetPassword(_newPassCtrl.text.trim());
         if (mounted) {
           CustomSnackbar.showSuccess(context, "Password updated successfully!");
           Navigator.pop(context);
         }
       } catch (e) {
         if (mounted) {
-          CustomSnackbar.showError(context, "Failed to change password: $e");
+          CustomSnackbar.showError(context, "Error: $e");
         }
       }
     }
@@ -56,110 +48,59 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: const Text("Change Password"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded),
-          onPressed: () => Navigator.pop(context),
-        ),
+        backgroundColor: Colors.transparent,
       ),
       body: Container(
         decoration: const BoxDecoration(
-          gradient: AppTheme.backgroundGradient,
+          gradient: LinearGradient(
+            colors: [Color(0xff0F2027), Color(0xff203A43), Color(0xff2C5364)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
         ),
         child: SafeArea(
-          child: SingleChildScrollView(
+          child: Padding(
             padding: const EdgeInsets.all(24),
             child: GradientCard(
-              borderRadius: 24,
-              padding: const EdgeInsets.all(24),
               child: Form(
                 key: _formKey,
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(18),
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: AppTheme.primaryGradient,
-                      ),
-                      child: const Icon(Icons.lock_reset_rounded, size: 36, color: Colors.white),
-                    ).animate().scale(duration: 500.ms, curve: Curves.elasticOut),
-
-                    const SizedBox(height: 20),
-                    const Text(
-                      "Security Settings",
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white),
-                    ).animate().fadeIn(),
-
-                    const SizedBox(height: 6),
-                    Text(
-                      "Your new password must be at least 6 characters long.",
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 13),
-                    ).animate().fadeIn(delay: 50.ms),
-
-                    const SizedBox(height: 28),
-
-                    TextFormField(
-                      controller: _currentPassCtrl,
-                      obscureText: _obscureCurrent,
-                      style: const TextStyle(color: Colors.white),
-                      validator: (v) => (v == null || v.isEmpty) ? "Enter current password" : null,
-                      decoration: InputDecoration(
-                        labelText: "Current Password",
-                        prefixIcon: const Icon(Icons.lock_outline_rounded),
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscureCurrent ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: Colors.white38),
-                          onPressed: () => setState(() => _obscureCurrent = !_obscureCurrent),
-                        ),
-                      ),
-                    ).animate().fadeIn(delay: 100.ms),
-
-                    const SizedBox(height: 18),
-
                     TextFormField(
                       controller: _newPassCtrl,
-                      obscureText: _obscureNew,
+                      obscureText: _obscure,
                       style: const TextStyle(color: Colors.white),
-                      validator: (v) => (v != null && v.length < 6) ? "Password must be at least 6 characters" : null,
+                      validator: (v) => (v != null && v.length < 6) ? "Min 6 characters" : null,
                       decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.lock_outline_rounded),
                         labelText: "New Password",
-                        prefixIcon: const Icon(Icons.key_off_rounded),
                         suffixIcon: IconButton(
-                          icon: Icon(_obscureNew ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: Colors.white38),
-                          onPressed: () => setState(() => _obscureNew = !_obscureNew),
+                          icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility, color: Colors.white70),
+                          onPressed: () => setState(() => _obscure = !_obscure),
                         ),
                       ),
-                    ).animate().fadeIn(delay: 150.ms),
-
+                    ),
                     const SizedBox(height: 18),
-
                     TextFormField(
                       controller: _confirmPassCtrl,
-                      obscureText: _obscureConfirm,
+                      obscureText: _obscure,
                       style: const TextStyle(color: Colors.white),
                       validator: (v) => v != _newPassCtrl.text ? "Passwords do not match" : null,
-                      decoration: InputDecoration(
-                        labelText: "Confirm New Password",
-                        prefixIcon: const Icon(Icons.check_circle_outline_rounded),
-                        suffixIcon: IconButton(
-                          icon: Icon(_obscureConfirm ? Icons.visibility_off_rounded : Icons.visibility_rounded, color: Colors.white38),
-                          onPressed: () => setState(() => _obscureConfirm = !_obscureConfirm),
-                        ),
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.lock_reset_rounded),
+                        labelText: "Confirm Password",
                       ),
-                    ).animate().fadeIn(delay: 200.ms),
-
-                    const SizedBox(height: 32),
-
+                    ),
+                    const SizedBox(height: 30),
                     SizedBox(
                       width: double.infinity,
-                      height: 56,
+                      height: 55,
                       child: ElevatedButton(
-                        onPressed: loading ? null : _changePassword,
-                        child: loading
-                            ? const SizedBox(width: 24, height: 24, child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-                            : const Text("UPDATE PASSWORD"),
+                        onPressed: loading ? null : _updatePassword,
+                        child: loading ? const CircularProgressIndicator() : const Text("UPDATE PASSWORD"),
                       ),
-                    ).animate().fadeIn(delay: 250.ms),
+                    ),
                   ],
                 ),
               ),
